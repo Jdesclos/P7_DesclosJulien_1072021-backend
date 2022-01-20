@@ -15,7 +15,7 @@ app.use(cookieParser());
 
 const cors=require("cors");
 const corsOptions ={
-   origin:"*", 
+   origin:"https://groupomaniafrontend.herokuapp.com/", 
    credentials:true,            //access-control-allow-credentials:true
    optionSuccessStatus:200,
 }
