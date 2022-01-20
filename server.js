@@ -14,8 +14,9 @@ db.sequelize.sync();
 app.use(cookieParser());
 
 const cors=require("cors");
+const { all } = require("sequelize/types/lib/operators");
 const corsOptions ={
-   origin:process.env.ORIGIN, 
+   origin: all, 
    credentials:true,            //access-control-allow-credentials:true
    optionSuccessStatus:200,
 }
