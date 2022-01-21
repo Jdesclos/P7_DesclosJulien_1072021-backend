@@ -1,0 +1,6 @@
+to install the api
+
+npm install
+npm start
+
+add images/attachment to gitignore when you test locally the app
