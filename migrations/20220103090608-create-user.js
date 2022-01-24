@@ -24,12 +24,16 @@ module.exports = {
         allowNull: true,
         type: Sequelize.STRING
       },
+      profession: {
+        allowNull: true,
+        type: Sequelize.STRING
+      },
       isAdmin: {
         type: Sequelize.BOOLEAN
       },
       profilePicture:{
         type:Sequelize.STRING,
-        defaultValue: "http://localhost:8080/images/default-profile.jpg"
+        defaultValue: "https://groupomaniadesclos.herokuapp.com/images/default-profile.jpg"
       },
       createdAt: {
         allowNull: false,
