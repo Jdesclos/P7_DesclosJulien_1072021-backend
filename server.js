@@ -15,7 +15,7 @@ app.use(cookieParser());
 
 const cors=require("cors");
 const corsOptions ={
-   origin:process.env.ORIGIN, 
+   origin:process.env.ORIGIN || process.env.ORIGIN2, 
    credentials:true,            //access-control-allow-credentials:true
    optionSuccessStatus:200,
 }
