@@ -7,7 +7,7 @@ const jwt = require("../midleware/auth.midleware");
 const { sequelize, user } = require("../../models");
 // Create and Save a new Messages
 exports.createMessage = (req, res) => {
-    if (!req.body) {
+    if (!req.body.content) {
         res.status(400).send({
             message: "Content can not be empty!"
         });

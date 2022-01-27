@@ -1,5 +1,5 @@
+const fs = require('fs')
 const multer = require('multer');
-
 const MIME_TYPES = {
   'image/jpg': 'jpg',
   'image/jpeg': 'jpg',
@@ -9,7 +9,9 @@ const MIME_TYPES = {
 
 const storage = multer.diskStorage({
   destination: (req, file, callback) => {
-    callback(null, 'images/attachment');//indique à multer d'enregistrer dans le dossier images
+    const path = 'images/attachment';
+    fs.mkdirSync(path, { recursive: true })
+    callback(null, path);//indique à multer d'enregistrer dans le dossier images
   },
   filename: (req, file, callback) => {
     let name = file.originalname.split(' ').join('_');//remplace les espaces par des '_'

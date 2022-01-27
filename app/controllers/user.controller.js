@@ -110,25 +110,61 @@ exports.login = (req,res, next) => {
 
 exports.update = (req, res) => {
     const id = req.params.id;
-    User.update(req.body, {
-      where: { id: id }
+    User.findOne({
+        where: { id: id }
     })
-      .then(num => {
-        if (num == 1) {
-          res.send({
-            message: "User was updated successfully."
-          });
-        } else {
-          res.send({
-            message: `Cannot update User with id=${id}. Maybe User was not found or req.body is empty!`
-          });
-        }
-      })
-      .catch(err => {
-        res.status(500).send({
-          message: "Error updating User with id=" + id
+    .then (user => {
+
+        const userUpdate = ({
+            username:User.username,
+            password:User.password,
+            bio:User.bio,
+            profession:User.profession
         });
-      });
+        if(!user){
+            return res.status(401).json({ error: 'Utilisateur non trouvé !' });
+        }else{
+            if (req.body.bio != '') {
+                userUpdate.bio = req.body.bio;
+            }
+            if (req.body.username != '') {
+                userUpdate.username = req.body.username;
+            }
+            if ( req.body.password !== undefined && req.body.password != null && req.body.password != "") {
+                let password = req.body.password;
+                if (!PASSWORD_REGEX.test(password)) {
+                    return res.status(400).json({ 'error': 'password invalid (must length 4 - 8 and include 1 number at least)' });
+                }
+                bcrypt.hash(password, 10)
+                userUpdate.password = password;
+            }
+            if (req.body.profession != '') {
+                userUpdate.profession = req.body.profession;
+            }
+            User.update(userUpdate, {
+                where: { id: id }
+              })
+                .then(num => {
+                    console.log(user)
+                  if (num == 1) {
+                    res.send({
+                      message: "User was updated successfully."
+                    });
+                  } else {
+                    
+                    res.send({
+                      message: `Cannot update User with id=${id}. Maybe User was not found or req.body is empty!`
+                    });
+                  }
+                })
+                .catch(err => {
+                  res.status(500).send({
+                    message: "Error updating User with id=" + id
+                  });
+                });
+        }
+    })
+    
   };
 
 exports.delete = (req, res) => {
