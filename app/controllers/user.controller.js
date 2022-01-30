@@ -32,26 +32,6 @@ exports.register = (req, res, next) => {
     bcrypt.hash(password, 10)
     .then(hash => {
         console.log(User.length)
-        if(User.length < 1){
-            const user = ({
-                email: email,
-                username:username,
-                password: hash,
-                bio:bio,
-                profilePicture: profilePicture,
-                isAdmin: true
-            });
-            User.create(user)
-            .then(data => {
-                res.send(data);
-            })
-            .catch(err => {
-                res.status(500).send({
-                    message:
-                    err.message || "Some error occurred while creating the User."
-                });
-            })
-        }else {
             const user = ({
                 email: email,
                 username:username,
@@ -69,10 +49,10 @@ exports.register = (req, res, next) => {
                     message:
                     err.message || "Some error occurred while creating the User."
                 });
-            })            
-        }
-    });
+            })
+        })
 }
+    
 exports.login = (req,res, next) => {
     let username    = req.body.username;
     let password = req.body.password;
@@ -114,13 +94,14 @@ exports.update = (req, res) => {
         where: { id: id }
     })
     .then (user => {
-
+        console.log(user)
         const userUpdate = ({
             username:User.username,
             password:User.password,
             bio:User.bio,
             profession:User.profession
         });
+        console.log(userUpdate)
         if(!user){
             return res.status(401).json({ error: 'Utilisateur non trouvé !' });
         }else{
@@ -141,6 +122,7 @@ exports.update = (req, res) => {
             if (req.body.profession != '') {
                 userUpdate.profession = req.body.profession;
             }
+            console.log(userUpdate)
             User.update(userUpdate, {
                 where: { id: id }
               })
