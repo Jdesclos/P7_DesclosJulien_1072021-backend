@@ -90,18 +90,18 @@ exports.login = (req,res, next) => {
 
 exports.update = (req, res) => {
     const id = req.params.id;
+    console.log(req.file)
+    console.log(req.body.username)
     User.findOne({
         where: { id: id }
     })
     .then (user => {
-        console.log(user)
         const userUpdate = ({
             username:User.username,
             password:User.password,
             bio:User.bio,
             profession:User.profession
         });
-        console.log(userUpdate)
         if(!user){
             return res.status(401).json({ error: 'Utilisateur non trouvé !' });
         }else{
@@ -122,7 +122,9 @@ exports.update = (req, res) => {
             if (req.body.profession != '') {
                 userUpdate.profession = req.body.profession;
             }
-            console.log(userUpdate)
+            if (req.file !== '' && req.file !== null && req.file !== undefined) {
+                userUpdate.profilePicture = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`;
+            }
             User.update(userUpdate, {
                 where: { id: id }
               })
