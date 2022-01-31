@@ -17,11 +17,11 @@ module.exports = {
         type: Sequelize.STRING
       },
       firstname: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.STRING
       },
       lastname: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.STRING
       },
       password: {
@@ -41,7 +41,7 @@ module.exports = {
       },
       profilePicture:{
         type:Sequelize.STRING,
-        defaultValue: "https://groupomaniadesclos.herokuapp.com/images/default-profile.jpg"
+        defaultValue: "http://groupomaniadesclos.herokuapp.com/images/default-profile.jpg"
       },
       createdAt: {
         allowNull: false,
