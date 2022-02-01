@@ -104,7 +104,9 @@ exports.update = (req, res) => {
             username:User.username,
             password:User.password,
             bio:User.bio,
-            profession:User.profession
+            profession:User.profession,
+            lastname:User.lastname,
+            firstname:User.firstname
         });
         if(!user){
             return res.status(401).json({ error: 'Utilisateur non trouvé !' });
@@ -125,6 +127,12 @@ exports.update = (req, res) => {
             }
             if (req.body.profession != '') {
                 userUpdate.profession = req.body.profession;
+            }
+            if (req.body.firstname != '') {
+                userUpdate.firstname = req.body.firstname;
+            }
+            if (req.body.lastname != '') {
+                userUpdate.lastname = req.body.lastname;
             }
             if (req.file !== '' && req.file !== null && req.file !== undefined) {
                 userUpdate.profilePicture = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`;
