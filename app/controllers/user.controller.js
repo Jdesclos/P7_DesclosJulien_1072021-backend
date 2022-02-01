@@ -7,7 +7,7 @@ const jwtUtils = require('../utils/auth.utils');
 const localStorage= require('node-localstorage');
 const EMAIL_REGEX     = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 const PASSWORD_REGEX  = /^(?=.*\d).{4,8}$/;
-
+const { Op } = require("sequelize");
 exports.register = (req, res, next) => {
     let email    = req.body.email;
     let username = req.body.username;
@@ -29,34 +29,40 @@ exports.register = (req, res, next) => {
     if (!PASSWORD_REGEX.test(password)) {
         return res.status(400).json({ 'error': 'password invalid (must length 4 - 8 and include 1 number at least)' });
     }
-    bcrypt.hash(password, 10)
-    .then(hash => {
-        console.log(User.length)
-            const user = ({
-                email: email,
-                username:username,
-                password: hash,
-                bio:bio,
-                profilePicture: profilePicture,
-                isAdmin: false
-            });
-            User.create(user)
-            .then(data => {
-                res.send(data);
-            })
-            .catch(err => {
-                res.status(500).send({
-                    message:
-                    err.message || "Some error occurred while creating the User."
-                });
-            })
-        })
+    User.findOne({where:{[Op.or]: [{email:email}, {username:username}]}}).then (user => {
+        if(!user){
+            bcrypt.hash(password, 10)
+            .then(hash => {
+                    const user = ({
+                        email: email,
+                        username:username,
+                        password: hash,
+                        bio:bio,
+                        profilePicture: profilePicture,
+                        isAdmin: false
+                    });
+                    User.create(user)
+                    .then(data => {
+                        res.send(data);
+                    })
+                    .catch(err => {
+                        res.status(400).send({
+                            message:
+                            err.message || "Some error occurred while creating the User."
+                        });
+                    })
+                })
+        }else {
+            res.status(400).send({
+               message: "L'email ou l'username existe déjà"
+            });        
+        }
+    })
 }
     
 exports.login = (req,res, next) => {
     let username    = req.body.username;
     let password = req.body.password;
-
     if (username == null ||  password == null) {
         return res.status(400).json({ 'error': 'missing parameters' });
     }
@@ -90,8 +96,6 @@ exports.login = (req,res, next) => {
 
 exports.update = (req, res) => {
     const id = req.params.id;
-    console.log(req.file)
-    console.log(req.body.username)
     User.findOne({
         where: { id: id }
     })
@@ -129,10 +133,10 @@ exports.update = (req, res) => {
                 where: { id: id }
               })
                 .then(num => {
-                    console.log(user)
                   if (num == 1) {
                     res.send({
-                      message: "User was updated successfully."
+                        username: userUpdate.username,
+                        message: "User was updated successfully."
                     });
                   } else {
                     
@@ -176,9 +180,7 @@ exports.delete = (req, res) => {
 };
 
 exports.getUser = (req,res)=> {
-    console.log(req.params)
     const id = req.params.id;
-    console.log(id)
     User.findOne({ where: { id: id }})
     .then(data => {
         res.send(data);

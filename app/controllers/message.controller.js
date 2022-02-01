@@ -40,93 +40,90 @@ exports.createMessage = (req, res) => {
   
 // Retrieve all Messagess from the database.
  exports.findAllMessage = async (req, res) => {
-
-    var order   = req.query.order;
-    let messages = await Message.findAll({ limit: 10, order: [(order != null) ? order.split(':') : ['createdAt', 'DESC']]  } ,{include: [{model: User,required: true}]});
-    let users = await User.findAll();    
-    if(messages) {
-        if(users){
-            messagesWithUser = mapUserToMessage(messages, users);
-            let posts = groupCommentByPost(messagesWithUser)
-            res.send(posts);
+     var order   = req.query.order;
+     let messages = await Message.findAll({ limit: 10, order: [(order != null) ? order.split(':') : ['createdAt', 'DESC']]  } ,{include: [{model: User,required: true}]});
+     let users = await User.findAll();    
+     if(messages) {
+         if(users){
+             messagesWithUser = mapUserToMessage(messages, users);
+             let posts = groupCommentByPost(messagesWithUser)
+             res.send(posts);
+            }
+        }
+        
+    };
+    
+    
+    // Update a Messages by the id in the request
+    exports.modifyMessage = (req, res) => {
+        const id = req.params.id;
+        
+        Message.update(req.body, {
+            where: { id: id }
+        })
+        .then(num => {
+            if (num == 1) {
+                res.send({
+                    message: "Message was updated successfully."
+                });
+            } else {
+                res.send({
+                    message: `Cannot update Message with id=${id}. Maybe Message was not found or req.body is empty!`
+                });
+            }
+        })
+        .catch(err => {
+            res.status(500).send({
+                message: "Error updating Message with id=" + id
+            });
+        });
+    };
+    
+    // Delete a Messages with the specified id in the request
+    exports.deleteMessage = (req, res) => {
+        const id = req.body.idMessage;
+        
+        Message.destroy({
+            where: { id: id }
+        })
+        .then(num => {
+            if (num == 1) {
+                res.send({
+                    message: "Message was deleted successfully!"
+                });
+            } else {
+                res.send({
+                    message: `Cannot delete Message with id=${id}. Maybe Message was not found!`
+                });
+            }
+        })
+        .catch(err => {
+            res.status(500).send({
+                message: "Could not delete Message with id=" + id
+            });
+        });
+    };
+    
+    //find all message by id
+    
+    exports.findAllById = async (req, res) => {
+        console.log('je suis dedans')
+        const id = req.params.id;
+        var order   = req.query.order;
+        let messages = await Message.findAll({where:{userId : id}, limit: 10, order: [(order != null) ? order.split(':') : ['createdAt', 'DESC']]  } ,{include: [{model: User,required: true}]});
+        let users = await User.findAll();    
+        if(messages) {
+            if(users){
+                messagesWithUser = mapUserToMessage(messages, users);
+                let posts = groupCommentByPost(messagesWithUser)
+                res.send(posts);
+            }
         }
     }
     
-};
-
-
-// Update a Messages by the id in the request
-exports.modifyMessage = (req, res) => {
-    const id = req.params.id;
-
-    Message.update(req.body, {
-        where: { id: id }
-    })
-    .then(num => {
-        if (num == 1) {
-            res.send({
-            message: "Message was updated successfully."
-        });
-        } else {
-            res.send({
-            message: `Cannot update Message with id=${id}. Maybe Message was not found or req.body is empty!`
-        });
-        }
-    })
-    .catch(err => {
-        res.status(500).send({
-            message: "Error updating Message with id=" + id
-        });
-    });
-};
-
-// Delete a Messages with the specified id in the request
-exports.deleteMessage = (req, res) => {
-    const id = req.params.id;
-
-    Message.destroy({
-        where: { id: id }
-    })
-    .then(num => {
-        if (num == 1) {
-            res.send({
-            message: "Message was deleted successfully!"
-        });
-        } else {
-            res.send({
-            message: `Cannot delete Message with id=${id}. Maybe Message was not found!`
-        });
-        }
-    })
-    .catch(err => {
-        res.status(500).send({
-            message: "Could not delete Message with id=" + id
-        });
-    });
-};
-
-//find all message by id
-
-exports.findAllById = (req, res) => {
-        const id = req.userId;
-    Message.findAll({
-        where: { userId: id },
-        limit: 10
-    })
-    .then(data => {
-        res.send(data);
-    })
-    .catch(err => {
-        res.status(500).send({
-            message:
-                err.message || "Some error occurred while retrieving messages."
-        });
-    });
-}
-
-//Likes
-
-exports.like =(req,res,next)=>{
+    //Likes
+    
+    exports.like =(req,res,next)=>{
     let userId= req.body.userId;
     let id = req.body.sendLike.id;       
             Message.findOne({where: { id: id }})
@@ -214,6 +211,21 @@ function mapUserToMessage(messages, users) {
                 message.dataValues.username = users[id -1].dataValues.username;
                 message.dataValues.profilePicture= users[id -1].dataValues.profilePicture;
                 messagesWithUserName.push(message);
+            }
+                        
+        })
+    });
+    return messagesWithUserName;
+}
+function mapUserToMessage2(messages, users,id) {
+    messagesWithUserName = []
+    messages.forEach(message => {
+        users.forEach({where: {id:id}},user => {
+            if(user.dataValues.id == message.dataValues.UserId){
+                message.dataValues.username = users.dataValues.username;
+                message.dataValues.profilePicture= users.dataValues.profilePicture;
+                messagesWithUserName.push(message);
+                console.log(messagesWithUserName);
             }
                         
         })
