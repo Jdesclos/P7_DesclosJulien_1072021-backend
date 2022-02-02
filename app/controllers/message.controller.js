@@ -26,22 +26,19 @@ exports.createMessage = (req, res) => {
     }else {
         const message = {
             content: req.body.content,
-            attachment :  `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+            attachment :  `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,//on indique l'url de l'image, req.protocol: http, req.get('host):l'hote du serveur, req.file.filename: nom du fichier
             UserId:req.userId,
             likes: 0,
             messageId:req.body.messageId,
             userLiked:'',
         };
-
         createMessage(res,message);
-    }
-    
-};
-  
+    }    
+};  
 // Retrieve all Messagess from the database.
  exports.findAllMessage = async (req, res) => {
      var order   = req.query.order;
-     let messages = await Message.findAll({ limit: 10, order: [(order != null) ? order.split(':') : ['createdAt', 'DESC']]  } ,{include: [{model: User,required: true}]});
+     let messages = await Message.findAll({ limit: 10, order: [(order != null) ? order.split(':') : ['createdAt', 'DESC']]  } ,{include: [{model: User,required: true}]});//cherche les 10 messages les plus récents 
      let users = await User.findAll();    
      if(messages) {
          if(users){
@@ -49,18 +46,12 @@ exports.createMessage = (req, res) => {
              let posts = groupCommentByPost(messagesWithUser)
              res.send(posts);
             }
-        }
-        
-    };
-    
-    
-    // Update a Messages by the id in the request
+        }        
+    };   
+    // Update a Messages by the id in the request !!PAS UTILISÉ POUR LE MOMENT!!
     exports.modifyMessage = (req, res) => {
-        const id = req.params.id;
-        
-        Message.update(req.body, {
-            where: { id: id }
-        })
+        const id = req.params.id;        
+        Message.update(req.body, {where: { id: id }})
         .then(num => {
             if (num == 1) {
                 res.send({
@@ -77,17 +68,13 @@ exports.createMessage = (req, res) => {
                 message: "Error updating Message with id=" + id
             });
         });
-    };
-    
+    };    
     // Delete a Messages with the specified id in the request
     exports.deleteMessage = (req, res) => {
-        const id = req.body.idMessage;
-        
-        Message.destroy({
-            where: { id: id }
-        })
+        const id = req.body.idMessage;        
+        Message.destroy({where: { id: id }})
         .then(num => {
-            if (num == 1) {
+            if (num == 1) {//1 correspond à un succès
                 res.send({
                     message: "Message was deleted successfully!"
                 });
@@ -102,12 +89,9 @@ exports.createMessage = (req, res) => {
                 message: "Could not delete Message with id=" + id
             });
         });
-    };
-    
-    //find all message by id
-    
+    };    
+    //find all message by id    
     exports.findAllById = async (req, res) => {
-        console.log('je suis dedans')
         const id = req.params.id;
         var order   = req.query.order;
         let messages = await Message.findAll({where:{userId : id}, limit: 10, order: [(order != null) ? order.split(':') : ['createdAt', 'DESC']]  } ,{include: [{model: User,required: true}]});
@@ -119,18 +103,16 @@ exports.createMessage = (req, res) => {
                 res.send(posts);
             }
         }
-    }
-    
-    //Likes
-    
+    }    
+    //Likes    
     exports.like =(req,res,next)=>{
     let userId= req.body.userId;
     let id = req.body.sendLike.id;       
             Message.findOne({where: { id: id }})
                 .then(message => {       
-                    if(message.userLiked.split(",").includes(userId + ",")){
-                        Message.decrement('likes',{where: { id: id }});
-                        let userIds = message.userLiked.replace("," + userId + "," , "," );
+                    if(message.userLiked.split(",").includes(userId + ",")){//si l'utilisateur a déjà liké le post
+                        Message.decrement('likes',{where: { id: id }});//-1 au compteur de like
+                        let userIds = message.userLiked.replace("," + userId + "," , "," );//remplace le premier paramètre par le second, éfface son nom et le remplace par une virgule
                         Message.update({userLiked: `${userIds}`},{where: { id: id }})
                         // Message.destroy({userLiked: `${userId}`},{where: { id: id }})
                         .then(data => {
@@ -142,9 +124,9 @@ exports.createMessage = (req, res) => {
                                     err.message || "Some error occurred while retrieving messages."
                             });
                         });
-                    }else if(message.userLiked.includes(userId)) {
-                        Message.decrement('likes',{where: { id: id }});
-                        let userIds = message.userLiked.replace(userId,"" );
+                    }else if(message.userLiked.includes(userId)) {//si l'utilisateur a déjà liké le post et est le seul
+                        Message.decrement('likes',{where: { id: id }});//-1 au compteur de like
+                        let userIds = message.userLiked.replace(userId,"" );//remplace le premier paramètre par le second, éfface son nom et le remplace par un vide
                         Message.update({userLiked: `${userIds}`},{where: { id: id }})
                         // Message.destroy({userLiked: `${userId}`},{where: { id: id }})
                         .then(data => {
@@ -157,11 +139,11 @@ exports.createMessage = (req, res) => {
                             });
                         });
                     }else{
-                        Message.increment('likes',{where: { id: id }});
+                        Message.increment('likes',{where: { id: id }});//+1 au compteur de like
                         
-                        if(message.userLiked == ""){
+                        if(message.userLiked == ""){//si le tableau est vide
                             let userIds = userId;
-                            Message.update({userLiked: `${userIds}`},{where: { id: id }})
+                            Message.update({userLiked: `${userIds}`},{where: { id: id }})//ajoute l'utilisateur au tableau
                             .then(data => {
                                 res.send(data)
                             })
@@ -171,7 +153,7 @@ exports.createMessage = (req, res) => {
                                         err.message || "Some error occurred while retrieving messages."
                                 });
                             });
-                        }else{
+                        }else{//si il contient déjà des utilisateurs
                             let userIds = message.userLiked + "," + userId + ",";
                             Message.update({userLiked: `${userIds}`},{where: { id: id }})
                             .then(data => {
@@ -187,9 +169,7 @@ exports.createMessage = (req, res) => {
                         
                     }
                 })
-            }
-            
-            
+ }                        
 function createMessage(res, message) {
      Message.create(message)
          .then(data => {
@@ -201,7 +181,7 @@ function createMessage(res, message) {
              });
         });
 }
-            
+//fonction qui créer un tableau  qui lie les utilisateurs (username et photo de profil)  à leurs messages         
 function mapUserToMessage(messages, users) {
     messagesWithUserName = []
     messages.forEach(message => {
@@ -217,23 +197,7 @@ function mapUserToMessage(messages, users) {
     });
     return messagesWithUserName;
 }
-function mapUserToMessage2(messages, users,id) {
-    messagesWithUserName = []
-    messages.forEach(message => {
-        users.forEach({where: {id:id}},user => {
-            if(user.dataValues.id == message.dataValues.UserId){
-                message.dataValues.username = users.dataValues.username;
-                message.dataValues.profilePicture= users.dataValues.profilePicture;
-                messagesWithUserName.push(message);
-                console.log(messagesWithUserName);
-            }
-                        
-        })
-    });
-    return messagesWithUserName;
-}
-
-
+//lie les commentaires aux messages auquels ils appartiennent
 function groupCommentByPost(posts){
     let response= [];
     posts.forEach(message => {

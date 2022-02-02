@@ -58,8 +58,7 @@ exports.register = (req, res, next) => {
             });        
         }
     })
-}
-    
+}    
 exports.login = (req,res, next) => {
     let username    = req.body.username;
     let password = req.body.password;
@@ -93,13 +92,10 @@ exports.login = (req,res, next) => {
     }
     })
 };
-
 exports.update = (req, res) => {
     const id = req.params.id;
-    User.findOne({
-        where: { id: id }
-    })
-    .then (user => {
+    User.findOne({where: { id: id }})
+    .then (user => {//on remplie d'abord les variables avec les données de la base de données
         const userUpdate = ({
             username:User.username,
             password:User.password,
@@ -110,7 +106,7 @@ exports.update = (req, res) => {
         });
         if(!user){
             return res.status(401).json({ error: 'Utilisateur non trouvé !' });
-        }else{
+        }else{//si les champs envoyés nes sont pas vides on écrase les données précedément enregistrées
             if (req.body.bio != '') {
                 userUpdate.bio = req.body.bio;
             }
@@ -136,7 +132,7 @@ exports.update = (req, res) => {
             }
             if (req.file !== '' && req.file !== null && req.file !== undefined) {
                 userUpdate.profilePicture = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`;
-            }
+            }//on met à jour avec les données conservées (si il y en a) plus les nouvelles données
             User.update(userUpdate, {
                 where: { id: id }
               })
@@ -159,10 +155,8 @@ exports.update = (req, res) => {
                   });
                 });
         }
-    })
-    
+    })    
   };
-
 exports.delete = (req, res) => {
     const id = req.params.id;
 
@@ -186,7 +180,6 @@ exports.delete = (req, res) => {
         });
     });
 };
-
 exports.getUser = (req,res)=> {
     const id = req.params.id;
     User.findOne({ where: { id: id }})
