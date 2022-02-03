@@ -187,12 +187,10 @@ function mapUserToMessage(messages, users) {
     messages.forEach(message => {
         users.forEach(user => {
             if(user.dataValues.id == message.dataValues.UserId){
-                let id = user.dataValues.id;
-                message.dataValues.username = users[id -1].dataValues.username;
-                message.dataValues.profilePicture= users[id -1].dataValues.profilePicture;
+                message.dataValues.username = user.dataValues.username;
+                message.dataValues.profilePicture= user.dataValues.profilePicture;
                 messagesWithUserName.push(message);
-            }
-                        
+            }                        
         })
     });
     return messagesWithUserName;

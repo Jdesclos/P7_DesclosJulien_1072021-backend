@@ -1,6 +1,7 @@
 const db = require("../../models");
 const fs = require('fs');
 const User = db.User;
+const Message = db.Message;
 const jwt = require('../midleware/auth.midleware');
 const bcrypt = require('bcrypt');
 const jwtUtils = require('../utils/auth.utils');
@@ -8,6 +9,7 @@ const localStorage= require('node-localstorage');
 const EMAIL_REGEX     = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 const PASSWORD_REGEX  = /^(?=.*\d).{4,8}$/;
 const { Op } = require("sequelize");
+
 exports.register = (req, res, next) => {
     let email    = req.body.email;
     let username = req.body.username;
@@ -159,7 +161,17 @@ exports.update = (req, res) => {
   };
 exports.delete = (req, res) => {
     const id = req.params.id;
-
+    Message.destroy({where: {userId : id}})
+        .then( num => {
+            if (num == 1) {
+                res.send({
+                    message: "Messages from user was deleted succesfully"
+                })}else {
+                    res.send({
+                        message: `Cannot delete message with userId=${id}. Maybe Message was not found!`
+                    })
+                }
+        });
     User.destroy({
         where: { id: id }
     })
@@ -174,11 +186,6 @@ exports.delete = (req, res) => {
         });
         }
     })
-    .catch(err => {
-        res.status(500).send({
-            message: "Could not delete User with id=" + id
-        });
-    });
 };
 exports.getUser = (req,res)=> {
     const id = req.params.id;
